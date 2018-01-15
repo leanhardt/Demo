@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 # 表单验证模块
 
-from wtforms import StringField
-from wtforms.form import Form
-from wtforms.validators import DataRequired,length
+from wtforms import StringField,IntegerField
+from wtforms import Form
+from wtforms.validators import InputRequired,Length,Email
 
-class CMSForm(Form):
-    username = StringField('username',validators=[length(5,10)])
-    phone = StringField('phone',validators=[length(11,11),DataRequired])
-    password = StringField('password',validators=[length(6,10)])
+class LoginForm(Form):
+    email = StringField(validators=[Email(message='请输入正确的邮箱格式'),InputRequired(message='请输入邮箱')])
+    password = StringField(validators=[Length(6,20,message='密码长度为6-20位'),InputRequired(message='请输入密码')])
+    remember = IntegerField()
