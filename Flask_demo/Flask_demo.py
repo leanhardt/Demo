@@ -21,4 +21,4 @@ app.register_blueprint(front_bp)
 
 
 if __name__ == '__main__':
-    app.run(port=8888)
+    app.run(port=8000)
