@@ -25,5 +25,6 @@ def create_cms_user(username,password,email):
     db.session.commit()
     print('cms用户添加成功')
 
+
 if __name__ == '__main__':
     manager.run()

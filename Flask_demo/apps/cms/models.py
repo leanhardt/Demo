@@ -23,12 +23,15 @@ class CMSUser(db.Model):
     @property
     def password(self):
         return self._password
-    #set方法
+    #set方法，generate_password_hash哈希处理密码
     @password.setter
     def password(self,raw_password):
         self._password = generate_password_hash(raw_password)
 
+    #检查密码check_password_hash
     def check_password(self,raw_password):
         result = check_password_hash(self.password,raw_password)
         return result
+
+
 
