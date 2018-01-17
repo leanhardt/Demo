@@ -1,8 +1,8 @@
 {% extends 'cms/cms_base.html' %}
-{% block title %}
+{% block title -%}
    我的个人论坛管理系统
-{% endblock %}
+{%- endblock %}
 
-{% block page_title %}
-    欢迎来到我的个人论坛管理系统
-{% endblock %}
+{% block page_title -%}
+    {{ self.title() }}
+{%- endblock %}

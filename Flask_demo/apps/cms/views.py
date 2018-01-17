@@ -2,7 +2,7 @@
 
 from flask import Blueprint,views,request,session,redirect,url_for,g
 from flask import render_template
-from .forms import LoginForm
+from .forms import LoginForm,ResetpwdForm
 from .models import CMSUser
 from .decorators import login_required
 import config
@@ -21,6 +21,12 @@ def logout():
     #session.clear() 清除所有session
     del session[config.CMS_USER_ID]
     return redirect(url_for('cms.login'))
+
+#个人信息
+@bp.route('/profile/')
+@login_required
+def profile():
+    return render_template('cms/cms_profile.html')
 
 class LoginView(views.MethodView):
 
@@ -46,7 +52,27 @@ class LoginView(views.MethodView):
         else:
             message = form.errors.popitem()[1][0]
             return render_template('cms/cms_login.html',message=message)
+#修改密码
+class ResetpwdView(views.MethodView):
+    decorators = [login_required]
 
+    def get(self,message=None):
+        return render_template('cms/cms_resetpwd.html',message=message)
+
+    def post(self):
+        form = ResetpwdForm(request.form)
+        if form.validate():
+            oldpwd = form.oldpwd.data
+            newpwd = form.newpwd.data
+            user = CMSUser.query.filter_by(username=g.username).first()
+            if user and user.check_password(oldpwd):
+                session.add(password=newpwd)
+                session.commit()
+                return "succes"
+            else:
+                pass
+        return redirect(url_for('cms.resetpwd'))
 
 
 bp.add_url_rule('/login/',view_func=LoginView.as_view('login'))
+bp.add_url_rule('/resetpwd/',view_func=ResetpwdView.as_view('resetpwd'))
