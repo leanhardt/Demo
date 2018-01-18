@@ -159,6 +159,9 @@ body {
   margin-top: 0;
 }
 
+.form-container{
+    width: 300px;
+}
 
 /*
  * Placeholder dashboard ideas
