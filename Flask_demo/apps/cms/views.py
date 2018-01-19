@@ -9,13 +9,14 @@ from flask import (
     url_for,
     g)
 from flask import render_template
-from .forms import LoginForm,ResetpwdForm
+from .forms import LoginForm,ResetpwdForm,ResetemailForm
 from .models import CMSUser
 from .decorators import login_required
-import config
+import config,string,random
 from exts import db,mail
 from utils import restful
 from flask_mail import Message
+from utils import cache
 
 bp = Blueprint('cms',__name__,url_prefix='/cms')
 
@@ -32,11 +33,36 @@ def logout():
     del session[config.CMS_USER_ID]
     return redirect(url_for('cms.login'))
 
-@bp.route('/email/')
-def send_email():
-    msg = Message("我爱佳佳",recipients=['116592436@qq.com','893607696@qq.com'],body='测试')
-    mail.send(msg)
-    return 'success'
+@bp.route('/email_captcha/')
+def email_captcha():
+    #/email_captcha/?email=xxx@xxx.com
+    email = request.args.get('email')
+    if not email:
+        return restful.parma_error('请传递邮箱参数！')
+
+    #获取验证码
+    #string.ascii_letters获取a-zA-Z的字母列表
+    source = list(string.ascii_letters)
+    #加上0-9的数字到列表source
+    #source = source.extend(["0","1","2","3","4","5","6","7","8","9"])
+    source.extend(map(lambda x:str(x),range(0,10)))
+    #从列表中随机获取6位验证码
+    captcha = "".join(random.sample(source,6))
+
+    #给这个邮箱发送邮件
+    msg = Message('python论坛邮箱验证码',recipients=[email],body='邮箱验证码：%s'%captcha)
+    try:
+        mail.send(msg)
+    except:
+        return restful.server_error()
+    cache.set(email,captcha)
+    return restful.success()
+
+# @bp.route('/email/')
+# def send_email():
+#     msg = Message("我爱佳佳",recipients=['116592436@qq.com','893607696@qq.com'],body='测试')
+#     mail.send(msg)
+#     return 'success'
 
 #个人信息
 @bp.route('/profile/')
@@ -97,7 +123,14 @@ class ResetEmailView(views.MethodView):
     def get(self):
         return render_template('cms/cms_resetemail.html')
     def post(self):
-        pass
+        form = ResetemailForm(request.form)
+        if form.validate():
+            email = form.email.data
+            g.cms_user.email = email
+            db.session.commit()
+            return restful.success()
+        else:
+            return restful.parma_error(form.get_error())
 
 bp.add_url_rule('/login/',view_func=LoginView.as_view('login'))
 bp.add_url_rule('/resetpwd/',view_func=ResetpwdView.as_view('resetpwd'))
