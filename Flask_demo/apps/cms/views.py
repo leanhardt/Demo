@@ -10,8 +10,8 @@ from flask import (
     g)
 from flask import render_template
 from .forms import LoginForm,ResetpwdForm,ResetemailForm
-from .models import CMSUser
-from .decorators import login_required
+from .models import CMSUser,CMSPersmission
+from .decorators import login_required,permission_required
 import config,string,random
 from exts import db,mail
 from utils import restful
@@ -32,6 +32,48 @@ def logout():
     #session.clear() 清除所有session
     del session[config.CMS_USER_ID]
     return redirect(url_for('cms.login'))
+
+#帖子管理
+@bp.route('/posts/')
+@login_required
+@permission_required(CMSPersmission.POSTER)
+def posts():
+    return render_template('cms/cms_posts.html')
+
+#评论管理
+@bp.route('/comments/')
+@login_required
+@permission_required(CMSPersmission.COMMENTER)
+def comments():
+    return render_template('cms/cms_comments.html')
+
+#板块管理
+@bp.route('/boards/')
+@login_required
+@permission_required(CMSPersmission.BOARDER)
+def boards():
+    return render_template('cms/cms_boards.html')
+
+#前台用户管理
+@bp.route('/fusers/')
+@login_required
+@permission_required(CMSPersmission.FRONTUSER)
+def fusers():
+    return render_template('cms/cms_fusers.html')
+
+#CMS用户管理
+@bp.route('/cusers/')
+@login_required
+@permission_required(CMSPersmission.CMSUSER)
+def cusers():
+    return render_template('cms/cms_cusers.html')
+
+#CMS角色管理
+@bp.route('/croles/')
+@login_required
+@permission_required(CMSPersmission.ALL_PERMISSION)
+def croles():
+    return render_template('cms/cms_croles.html')
 
 @bp.route('/email_captcha/')
 def email_captcha():
@@ -58,11 +100,6 @@ def email_captcha():
     cache.set(email,captcha)
     return restful.success()
 
-# @bp.route('/email/')
-# def send_email():
-#     msg = Message("我爱佳佳",recipients=['116592436@qq.com','893607696@qq.com'],body='测试')
-#     mail.send(msg)
-#     return 'success'
 
 #个人信息
 @bp.route('/profile/')
@@ -116,7 +153,7 @@ class ResetpwdView(views.MethodView):
         else:
             message = form.get_error()
             return restful.parma_error(form.get_error())
-
+#修改邮箱
 class ResetEmailView(views.MethodView):
     decorators = [login_required]
 

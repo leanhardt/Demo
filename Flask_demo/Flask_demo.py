@@ -9,6 +9,7 @@ from exts import db,mail
 #CSRF保护
 from flask_wtf import CSRFProtect
 
+
 def create_app():
     app = Flask(__name__)
     #读取配置文件
@@ -24,6 +25,8 @@ def create_app():
 
     mail.init_app(app)
     return app
+
+
 
 if __name__ == '__main__':
     app = create_app()
